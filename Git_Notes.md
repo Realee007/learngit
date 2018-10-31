@@ -194,4 +194,156 @@ Git的版本库存了很多东西，其中最重要的就是称为**stage**（�
    $ git commit -m "xxx"
    ```
 
+# 远程库
 
+## local=> github
+
+```
+$ git remote add origin git@github.com:Realee007/learngit.git
+$ git push -u origin master
+```
+
+添加后，远程库的名字就是`origin`，这是Git的默认叫法，当然也可以修改成其他。
+
+通过`git push` 命令，将当前分支`master`所有内容推送到远程。
+
+由于远程库是空的，第一次推送`master`分支时，会加上`-u`参数，Git不但会把本地的`master`分支内容推送的远程新的`master`分支，还会将本地的`master`分支和远程的`master`分支关联起来。后续本地修改进行远程提交只需要:
+
+```
+$ git push origin master
+```
+
+## github=>local
+
+1. 准备好github上的仓库
+
+2. 用命令`git clone`克隆一个本地库
+
+   使用clone时会发现github会支持多种协议，默认的`ssh`,也可以使用`https等`其他协议。
+
+   使用`https`除了速度慢以外，还有个最大的麻烦是每次推送都必须输入口令。
+
+# 分支管理
+
+​	首先，创建`dev`分支，然后切换至`dev`分支
+
+```
+$ git checkout -b dev
+```
+
+​	`git checkout`命令加上`-b`参数表示创建并切换，相当于以下两条命令
+
+```
+$ git branch dev
+$ git checkout dev
+```
+
+然后使用`git branch`命令查看当前分支
+
+```
+$ git branch
+* dev
+ master
+```
+
+其中当前分支前面会标一个`*`号。于是现在我们就是在`dev`分支上进行操作。
+
+从`dev`切换成`master`分支： `git checkout master`，切换到`master`分支后，在`dev`分支上进行的修改就不见了，如果要将`dev`分支的工作成果合并到`master`分支上：
+
+```
+$ git merge dev
+Updating a05d9c1..6668d44
+Fast-forward
+ readme.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+```
+
+`git merge` 用于合并指定分支到当前分支，合并后，可以发现`dev`分支的内容将`master`覆盖了。
+
+合并有多种“模式”，比如`Fast-forward`，为快进模式，也就是直接把`master`指向`dev`。
+
+合并完成后，就可以放心的删除`dev`分支。
+
+```
+$ git branch -d dev
+Deleted branch dev (was 6668d44).
+```
+
+现在再查看分支，就只剩下`master`分支
+
+```
+$ git branch
+* master
+```
+
+
+
+## 命令
+
+查看分支：`git branch`
+
+创建分支：`git branch <name>`
+
+切换分支：`git checkout <name>`
+
+创建+切换分支：`git checkout -b <name>`
+
+合并某分支到当前分支：`git merge <name>`
+
+删除分支：`git branch -d <name>`
+
+## 解决冲突
+
+当我们在合并不同分支，并且合并存在冲突时，git会告诉我们冲突的存在，此时必须手动解决冲突后再提交。
+
+`git status`可以告诉我们冲突的文件，Git用`<<<<<<<`，`=======`，`>>>>>>>`标记出不同分支的内容。
+
+用带参数的`git log`也可以看到分支的合并情况（使用`q`进行退出）。
+
+合并分支时，如果可能，Git会用`Fast forward`模式，但这种模式下，删除分支后，会丢掉分支信息。
+
+如果要强制禁用`Fast forward`模式，Git就会在merge时生成一个新的commit，这样，从分支历史上就可以看出分支信息。
+
+准备合并`dev`分支，请注意`--no-ff`参数，表示禁用`Fast forward`：
+
+```
+$ git merge --no-ff -m "merge with no-ff" dev
+```
+
+
+
+## stash功能（bug分支）
+
+常见常见：A为一游戏软件
+1、master 上面发布的是A的1.0版本
+2、dev 上开发的是A的2.0版本
+3、这时，用户反映 1.0版本存在漏洞，有人利用这个漏洞开外挂
+4、需要从dev切换到master去填这个漏洞，正常必须先提交dev目前的工作，才能切换。
+5、而dev的工作还未完成，不想提交，所以先把dev的工作stash一下。然后切换到master
+6、在master建立分支issue101并切换.
+7、在issue101上修复漏洞。
+8、修复后，在master上合并issue101
+9、切回dev，恢复原本工作，继续工作。
+
+```
+$ git stash
+保存并隐藏当前分支工作现场。
+$ git stash pop 
+返回工作现场
+```
+
+## feature分支(新功能分支)
+
+1.  在已有分支上上创建feature-xx分支
+
+2. 然后add,commit
+
+3. 切换到对应分支，进行合并
+
+   1. 确定合并，进行`merge`
+
+   2. 取消合并，进行旧分支的删除,对于未合并的分支，如果删除就会被丢失，此时只能进行`-D`删除
+
+      ```
+      $ git branch -D <name>
+      ```

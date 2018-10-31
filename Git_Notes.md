@@ -314,16 +314,17 @@ $ git merge --no-ff -m "merge with no-ff" dev
 
 ## stash功能（bug分支）
 
-常见常见：A为一游戏软件
-1、master 上面发布的是A的1.0版本
-2、dev 上开发的是A的2.0版本
-3、这时，用户反映 1.0版本存在漏洞，有人利用这个漏洞开外挂
-4、需要从dev切换到master去填这个漏洞，正常必须先提交dev目前的工作，才能切换。
-5、而dev的工作还未完成，不想提交，所以先把dev的工作stash一下。然后切换到master
-6、在master建立分支issue101并切换.
-7、在issue101上修复漏洞。
-8、修复后，在master上合并issue101
-9、切回dev，恢复原本工作，继续工作。
+常见场景：A为一游戏软件
+
+1. master 上面发布的是A的1.0版本
+2. dev 上开发的是A的2.0版本
+3. 这时，用户反映 1.0版本存在漏洞，有人利用这个漏洞开外挂
+4. 需要从dev切换到master去填这个漏洞，正常必须先提交dev目前的工作，才能切换。
+5. 而dev的工作还未完成，不想提交，所以先把dev的工作stash一下。然后切换到master
+6. 在master建立分支issue101并切换.
+7. 在issue101上修复漏洞。
+8. 修复后，在master上合并issue101
+9. 切回dev，恢复原本工作，继续工作。
 
 ```
 $ git stash
@@ -347,3 +348,75 @@ $ git stash pop
       ```
       $ git branch -D <name>
       ```
+
+## 远程协作
+
+通常我们的仓库至少会放2个分支：1.主分支 master,2. 开发分支dev
+
+多人协作时，会往`master`和`dev`分支上推送各自的修改。
+
+1. 首先，试图用`git push origin <branch-name>`推送自己的修改；
+
+2. 如果推送失败，则表明远程分支比本地更新，需要先用`git pull`试图合并；
+
+3. 如果合并有冲突，则解决冲突，并在本地提交；
+
+4. 没有冲突或者解决掉冲突后，再用`git push origin<branch-name>`推送成功
+
+   如果`git pull`提示`no tracking information`，则说明本地分支和远程分支的链接关系没有创建，用命令`git branch --set-upstream-to <branch-name> origin/<branch-name>`
+
+## 标签
+
+由于commit id 的复杂性，我们可以使用tag来代替commit id。
+
+### 添加标签
+
+敲命令`git tag <name>`就可以打一个新标签，默认为`HEAD`，可以用命令`git tag`查看所有标签。
+
+对之前的`commit id`补上标签，则是
+
+```
+$ git tag <name> <commit id>
+```
+
+标签不是按时间顺序列出，而是按字母排序的。使用`git show <tagname>`可以查看具体标签信息。
+
+还可以创建带有说明的标签，用`-a`指定标签名，`-m`指定说明文字：
+
+```
+$ git tag -a v0.1 -m "version 0.1 released" 1094adb
+```
+
+
+
+### 删除标签
+
+1. 仅存在本地的标签。
+
+```
+$ git tag -d <tagname>
+```
+
+创建的标签都只存在本地，不会自动推送到远程，若要推送到远程则使用：
+
+```
+$ git push origin <tagname>
+```
+
+或者一次性推送本地尚未推送的标签：
+
+```
+$ git push origin --tag
+```
+
+2. 若标签存在远程
+   1. 先删除本地;
+   2. 再远程push删除.
+
+```
+$ git tag -d <tagname>
+$ git push origin :refs/tags/<tagname>
+```
+
+
+
